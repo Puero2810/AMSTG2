@@ -127,5 +127,7 @@ public class PerfilUsuario extends AppCompatActivity implements View.OnClickList
         escribirTweets(info_user.get("user_name"),txt_date.getText().toString(),txt_tweet.getText().toString());
         Toast mensaje = Toast.makeText(getApplicationContext(),"Se envio el Tweet", Toast.LENGTH_SHORT);
         mensaje.show();
+        txt_date.setText("");
+        txt_tweet.setText("");
     }
 }
