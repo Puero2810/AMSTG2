@@ -6,13 +6,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -25,29 +23,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;
-    ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(new
-            ActivityResultContracts.StartActivityForResult(), new
-            ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK) {
-                Intent intent = result.getData();
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(
-                        intent);
-                try {
-                    GoogleSignInAccount account = task.getResult(ApiException.class);
-                    if (account != null) firebaseAuthWithGoogle(account);
-                } catch (ApiException e) {
-                    Log.w("TAG", "Fallo el inicio de sesión con google.", e);
-                }
-            }
-        }
-    });
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,15 +46,34 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private void cerrarSesion() {
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> updateUI(null));
+    }
 
     public void iniciarSesion(View view) {
         resultLauncher.launch(new Intent(mGoogleSignInClient.getSignInIntent()));
     }
-
+    ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(new
+            ActivityResultContracts.StartActivityForResult(), new
+            ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent intent = result.getData();
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(
+                                intent);
+                        try {
+                            GoogleSignInAccount account = task.getResult(ApiException.class);
+                            if (account != null) firebaseAuthWithGoogle(account);
+                        } catch (ApiException e) {
+                            Log.w("TAG", "Fallo el inicio de sesión con google.", e);
+                        }
+                    }
+                }
+            });
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d("TAG", "firebaseAuthWithGoogle:" + acct.getId());
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(),
-                null);
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -86,17 +85,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            String photo = String.valueOf(user.getPhotoUrl());
+            HashMap<String, String> info_user = new HashMap<String, String>();
+            info_user.put("user_name", user.getDisplayName());
+            info_user.put("user_email", user.getEmail());
+            info_user.put("user_photo", String.valueOf(user.getPhotoUrl()));
+            info_user.put("user_id", user.getUid());
+
+            finish();
+            Intent intent = new Intent(this, PerfilUsuario.class);
+            intent.putExtra("info_user", info_user);
+            startActivity(intent);
         } else {
             System.out.println("sin registrarse");
-            } }
+        } }
 
-    private void cerrarSesion() {
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> updateUI(null));
-    }
+
 }
