@@ -2,6 +2,7 @@ package com.example.amst_grupo2_lab2_cloud_firebase;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -24,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PerfilUsuario extends AppCompatActivity implements View.OnClickListener{
-    TextView txt_id, txt_name, txt_email;
+    TextView txt_id, txt_name, txt_email, txt_telefono;
     Button tweet;
     EditText txt_tweet, txt_date;
     ImageView imv_photo;
@@ -37,6 +38,7 @@ public class PerfilUsuario extends AppCompatActivity implements View.OnClickList
 
         Intent intent = getIntent();
         HashMap<String, String> info_user = (HashMap<String, String>)intent.getSerializableExtra("info_user");
+        txt_telefono=findViewById(R.id.txt_phone);
         txt_id = findViewById(R.id.txt_userId);
         txt_name = findViewById(R.id.txt_nombre);
         txt_email = findViewById(R.id.txt_correo);
@@ -49,6 +51,7 @@ public class PerfilUsuario extends AppCompatActivity implements View.OnClickList
         txt_id.setText(info_user.get("user_id"));
         txt_name.setText(info_user.get("user_name"));
         txt_email.setText(info_user.get("user_email"));
+        txt_telefono.setText(info_user.get("user_phone"));
         String photo = info_user.get("user_photo");
         Picasso.get().load(photo).into(imv_photo);
 
@@ -127,5 +130,7 @@ public class PerfilUsuario extends AppCompatActivity implements View.OnClickList
         escribirTweets(info_user.get("user_name"),txt_date.getText().toString(),txt_tweet.getText().toString());
         Toast mensaje = Toast.makeText(getApplicationContext(),"Se envio el Tweet", Toast.LENGTH_SHORT);
         mensaje.show();
+        txt_date.setText("");
+        txt_tweet.setText("");
     }
 }
