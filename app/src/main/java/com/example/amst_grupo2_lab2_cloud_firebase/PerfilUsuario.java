@@ -124,7 +124,7 @@ public class PerfilUsuario extends AppCompatActivity implements View.OnClickList
         Intent intent = getIntent();
         HashMap<String, String> info_user = (HashMap<String, String>)intent.getSerializableExtra("info_user");
 
-        escribirTweets(info_user.get("user_name"),txt_date.getText().toString(),txt_date.getText().toString());
+        escribirTweets(info_user.get("user_name"),txt_date.getText().toString(),txt_tweet.getText().toString());
         Toast mensaje = Toast.makeText(getApplicationContext(),"Se envio el Tweet", Toast.LENGTH_SHORT);
         mensaje.show();
     }
