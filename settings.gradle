@@ -12,5 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "AMST_Grupo2_Lab2_Cloud_Firebase"
+
+rootProject.name = "“AMST_Grupo2_LabB_Cloud_Firebase”"
 include ':app'

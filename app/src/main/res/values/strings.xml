@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">AMST_Grupo2_Lab2_Cloud_Firebase</string>
+    <string name="app_name">“AMST_Grupo2_LabB_Cloud_Firebase”</string>
+
+    <string name="facebook_app_id">574837631071895</string>
+    <string name="fb_login_protocol_scheme">fb574837631071895</string>
+    <string name="facebook_client_token">65815faa266225c1fde26c95ca3e2b11</string>
+
+
 </resources>

@@ -1,0 +1,161 @@
+package com.example.amst_grupo2_labb_cloud_firebase;
+
+import static android.content.ContentValues.TAG;
+
+import java.util.Arrays;
+import java.util.HashMap;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.Activity;
+import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
+import com.facebook.AccessToken;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.CallbackManager;
+
+
+public class MainActivity extends AppCompatActivity {
+
+    FirebaseAuth mAuth;
+    GoogleSignInClient mGoogleSignInClient;
+    private LoginButton loginButton;
+    CallbackManager callbackManager;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mAuth = FirebaseAuth.getInstance();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        Intent intent = getIntent();
+        String msg = intent.getStringExtra("msg");
+        if (msg != null) {
+            if (msg.equals("cerrarSesion")) {
+                cerrarSesion();
+            }
+        }
+
+        callbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().registerCallback(callbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        // App code
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        // App code
+                    }
+
+                    @Override
+                    public void onError(FacebookException exception) {
+                        // App code
+                    }
+                });
+        loginButton = findViewById(R.id.login_button);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LoginManager.getInstance().logInWithReadPermissions(MainActivity.this, Arrays.asList("public_profile"));
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    private void cerrarSesion() {
+        mGoogleSignInClient.signOut().addOnCompleteListener(this,
+                task -> updateUI(null));
+    }
+
+    public void iniciarSesion(View view) {
+        resultLauncher.launch(new Intent(mGoogleSignInClient.getSignInIntent()));
+    }
+
+    ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(new
+            ActivityResultContracts.StartActivityForResult(), new
+            ActivityResultCallback<ActivityResult>() {
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent intent = result.getData();
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
+                        try {
+                            GoogleSignInAccount account = task.getResult(ApiException.class);
+                            if (account != null) firebaseAuthWithGoogle(account);
+                        } catch (ApiException e) {
+                            Log.w("TAG", "Fallo el inicio de sesión con google.", e);
+                        }
+                    }
+                }
+            });
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Log.d("TAG", "firebaseAuthWithGoogle:" + acct.getId());
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = mAuth.getCurrentUser();
+                updateUI(user);
+            } else {
+                System.out.println("error");
+                updateUI(null);
+            }
+        });
+    }
+
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            HashMap<String, String> info_user = new HashMap<String, String>();
+            info_user.put("user_phone",user.getPhoneNumber());
+            info_user.put("user_name", user.getDisplayName());
+            info_user.put("user_email", user.getEmail());
+            info_user.put("user_photo", String.valueOf(user.getPhotoUrl()));
+            info_user.put("user_id", user.getUid());
+            finish();
+
+            Intent intent = new Intent(this, PerfilUsuario.class);
+            intent.putExtra("info_user", info_user);
+            startActivity(intent);
+        } else {
+            System.out.println("sin registrarse");
+        }
+    }
+
+}

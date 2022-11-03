@@ -1,12 +1,15 @@
-package com.example.amst_grupo2_lab2_cloud_firebase;
+package com.example.amst_grupo2_labb_cloud_firebase;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,8 +23,10 @@ import com.squareup.picasso.Picasso;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PerfilUsuario extends AppCompatActivity {
+public class PerfilUsuario extends AppCompatActivity implements View.OnClickListener{
     TextView txt_id, txt_name, txt_email;
+    Button tweet;
+    EditText txt_tweet, txt_date;
     ImageView imv_photo;
     DatabaseReference db_reference;
 
@@ -32,11 +37,14 @@ public class PerfilUsuario extends AppCompatActivity {
 
         Intent intent = getIntent();
         HashMap<String, String> info_user = (HashMap<String, String>)intent.getSerializableExtra("info_user");
-
         txt_id = findViewById(R.id.txt_userId);
         txt_name = findViewById(R.id.txt_nombre);
         txt_email = findViewById(R.id.txt_correo);
         imv_photo = findViewById(R.id.imv_foto);
+
+        txt_date=findViewById(R.id.txt_date);
+        txt_tweet=findViewById(R.id.txt_tweet);
+        tweet= (Button) findViewById(R.id.btn_tweet);
 
         txt_id.setText(info_user.get("user_id"));
         txt_name.setText(info_user.get("user_name"));
@@ -46,7 +54,8 @@ public class PerfilUsuario extends AppCompatActivity {
 
         iniciarBaseDeDatos();
         leerTweets();
-        escribirTweets(info_user.get("user_name"));
+        tweet.setOnClickListener(this);
+
     }
 
     private void updateUI(FirebaseUser user) {
@@ -95,15 +104,30 @@ public class PerfilUsuario extends AppCompatActivity {
                 });
     }
 
-    public void escribirTweets(String autor){
-        String tweet = "hola mundo firebase 2";
-        String fecha = "10/06/2021"; //Fecha actual
+    public void escribirTweets(String autor, String txt_date, String txt_tweet){
+
+
+        String tweet = txt_tweet;
+        String fecha = txt_date; //Fecha actual
         Map<String, String> hola_tweet = new HashMap<String, String>();
         hola_tweet.put("autor", autor);
         hola_tweet.put("fecha", fecha);
-        DatabaseReference tweets = db_reference.child("Grupo0").child("tweets");
+        DatabaseReference tweets = db_reference.child("Grupo2").child("tweets");
         tweets.setValue(tweet);
         tweets.child(tweet).child("autor").setValue(autor);
         tweets.child(tweet).child("fecha").setValue(fecha);
+
+    }
+
+    @Override
+    public void onClick(View view) {
+        Intent intent = getIntent();
+        HashMap<String, String> info_user = (HashMap<String, String>)intent.getSerializableExtra("info_user");
+
+        escribirTweets(info_user.get("user_name"),txt_date.getText().toString(),txt_tweet.getText().toString());
+        Toast mensaje = Toast.makeText(getApplicationContext(),"Se envio el Tweet", Toast.LENGTH_SHORT);
+        mensaje.show();
+        txt_date.setText("");
+        txt_tweet.setText("");
     }
 }

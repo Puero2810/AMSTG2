@@ -1,4 +1,4 @@
-package com.example.amst_grupo2_lab2_cloud_firebase;
+package com.example.amst_grupo2_labb_cloud_firebase;
 
 import org.junit.Test;
 
