@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
                         // App code
+                        startActivity(new Intent(MainActivity.this,PerfilFB.class));
+                        finish();
                     }
 
                     @Override
